@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dragon Sky Quest - Fly. Collect. Think. Survive.</title>
+  
+  <!-- Google Fonts: Cinzel & Nunito -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- MASTER GAME CONTAINER -->
+  <div id="game-container">
+    
+    <!-- Canvas Viewport -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Damage Screen Flash Overlay -->
+    <div id="flash-overlay"></div>
+
+    <!-- Top Right Quick Controls -->
+    <div class="top-controls">
+      <button id="btn-sound-toggle" class="icon-btn" style="width: auto; padding: 0 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 800;">
+        🔊 SOUND ON
+      </button>
+      <button id="btn-pause-toggle" class="icon-btn" title="Pause Game (P / Esc)">⏸️</button>
+    </div>
+
+    <!-- ==========================================
+         IN-GAME HUD (Priority 13: Clean & Precise Placement)
+         Top-left: Lives, Top-center: Coins, Top-right: Score, Below: Distance
+         ========================================== -->
+    <div id="game-hud" style="display: none;">
+      
+      <!-- Top Row -->
+      <div class="hud-top-bar">
+        
+        <!-- Top-Left: Lives -->
+        <div class="hud-left-lives">
+          <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">LIVES:</span>
+          <span id="hud-hearts" class="hud-hearts-text">❤️ ❤️ ❤️</span>
+        </div>
+
+        <!-- Top-Center: Coins & Quiz Milestone -->
+        <div class="hud-center-coins">
+          <div class="hud-coin-pill">
+            <span class="hud-coin-icon">🪙</span>
+            <span style="font-size: 0.8rem; color: #cbd5e1; font-weight: 700; text-transform: uppercase;">COINS:</span>
+            <span id="hud-coins" class="hud-coin-val">0</span>
+          </div>
+          <div class="milestone-bar-container">
+            <div class="milestone-label">
+              <span>🧠 Quiz at:</span>
+              <span id="hud-milestone-text">50 Coins</span>
+            </div>
+            <div class="milestone-progress">
+              <div id="hud-milestone-fill" class="milestone-progress-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top-Right: Score, Distance & Speed -->
+        <div class="hud-right-score">
+          <div class="hud-score-pill">
+            <span style="font-size: 0.8rem; color: #ffd700; font-weight: 700;">⭐ SCORE:</span>
+            <span id="hud-score" class="hud-score-val">0</span>
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <div class="hud-distance-pill">
+              <span>📏 </span>
+              <span id="hud-distance">0 m</span>
+            </div>
+            <div class="hud-distance-pill" style="border-color: rgba(251, 191, 36, 0.4); color: #fbbf24;">
+              <span>⚡ </span>
+              <span id="hud-speed">1.0x</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Row: Active Power-ups & Mobile D-Pad -->
+      <div class="hud-bottom-bar">
+        
+        <!-- Active Power-up Badges -->
+        <div id="hud-powerups-list" class="active-powerups-list">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- On-Screen Touch Controls (Priority 14: Mobile D-Pad) -->
+        <div class="mobile-dpad">
+          <button id="dpad-up" class="dpad-btn dpad-up" title="Lift / Up">⬆️</button>
+          <button id="dpad-left" class="dpad-btn dpad-left" title="Bank Left">⬅️</button>
+          <button id="dpad-down" class="dpad-btn dpad-down" title="Dive / Down">⬇️</button>
+          <button id="dpad-right" class="dpad-btn dpad-right" title="Bank Right">➡️</button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ==========================================
+         QUIZ MODAL (Priority 8: Sky Challenge)
+         ========================================== -->
+    <div id="quiz-overlay" class="overlay-screen hidden">
+      <div class="quiz-card">
+        
+        <div class="quiz-title-badge">🧠 SKY CHALLENGE</div>
+        <div id="quiz-milestone-indicator" class="quiz-milestone-text">Coins reached: 50</div>
+
+        <div class="quiz-timer-row">
+          <span>Countdown</span>
+          <span id="quiz-timer-num" style="color: var(--gold-primary); font-weight: 900;">TIME: 10</span>
+        </div>
+
+        <div class="quiz-timer-bar-wrap">
+          <div id="quiz-timer-bar-fill" class="quiz-timer-bar-fill"></div>
+        </div>
+
+        <h3 id="quiz-question-display" class="quiz-question-text">
+          Loading sky riddle...
+        </h3>
+
+        <div id="quiz-options-box" class="quiz-options-grid">
+          <!-- Populated by JS -->
+        </div>
+
+        <div id="quiz-feedback-result" class="quiz-feedback">
+          <!-- Correct / Wrong message -->
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==========================================
+         START SCREEN (Priority 1 & 3)
+         ========================================== -->
+    <div id="screen-start" class="overlay-screen">
+      <div class="panel-card">
+        <h1 class="game-title">DRAGON SKY QUEST</h1>
+        <p class="game-subtitle">“Fly. Collect. Think. Survive.”</p>
+
+        <div class="menu-btn-group">
+          <button id="btn-play" class="btn btn-primary">
+            <span>🐉</span> PLAY
+          </button>
+          <button id="btn-skins" class="btn btn-secondary" style="border-color: rgba(255, 215, 0, 0.45); color: #ffd700;">
+            <span>🎨</span> SKINS & CUSTOMIZE
+          </button>
+          <button id="btn-how-to-play" class="btn btn-secondary">
+            <span>📜</span> HOW TO PLAY
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         DRAGON SKINS & CUSTOMIZATION MODAL
+         ========================================== -->
+    <div id="screen-skins" class="overlay-screen hidden">
+      <div class="panel-card skins-panel-card">
+        <h2 class="game-title" style="font-size: 2rem;">🐉 DRAGON LAIR</h2>
+        <p class="game-subtitle" style="margin-bottom: 12px; font-size: 0.88rem;">Select your mythical dragon breed</p>
+
+        <!-- Live Interactive Preview Window -->
+        <div class="skin-preview-wrapper">
+          <canvas id="skin-preview-canvas" width="460" height="200"></canvas>
+          <div class="skin-preview-badge">
+            <span id="preview-dragon-name">Emerald Drake</span>
+          </div>
+        </div>
+
+        <!-- Dragon Skins List Grid -->
+        <div id="dragon-skins-grid" class="skins-grid">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="skins-action-bar">
+          <button id="btn-save-skins" class="btn btn-primary" style="flex: 1;">
+            <span>✨</span> EQUIP & FLY
+          </button>
+          <button id="btn-close-skins" class="btn btn-secondary" style="flex: 1;">
+            <span>↩️</span> BACK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         HOW TO PLAY MODAL
+         ========================================== -->
+    <div id="screen-howtoplay" class="overlay-screen hidden">
+      <div class="panel-card">
+        <h2 class="game-title" style="font-size: 2rem;">HOW TO PLAY</h2>
+        
+        <div class="info-text">
+          <h4>🎮 Flight & Physics Controls</h4>
+          <p>• <span class="key-tag">W / ↑</span> : Fly Upward / Generate Lift (counter gravity).</p>
+          <p>• <span class="key-tag">S / ↓</span> : Dive / Fast Downward Descent.</p>
+          <p>• <span class="key-tag">A / ←</span> : Bank Left | <span class="key-tag">D / →</span> : Bank Right.</p>
+          <p>• The dragon naturally falls under gravity unless lift is applied!</p>
+          <p>• On Mobile / Tablet, use the on-screen touch D-Pad.</p>
+          <p>• <span class="key-tag">P</span> or <span class="key-tag">Esc</span> : Pause / Resume Game.</p>
+
+          <h4>🌟 Core Gameplay Loop</h4>
+          <p>• <strong>Collect Coins</strong> (+10 pts each) to increase your score and reach milestones.</p>
+          <p>• <strong>Avoid Wild Birds</strong>. Colliding with a sky predator costs 1 Life (❤️).</p>
+          <p>• <strong>Every 50 Coins</strong> triggers a General Knowledge Sky Challenge (50, 100, 150, 200, 250, 300...).</p>
+          <p>• Answer correctly within 10 seconds to gain +100 bonus points and continue flying.</p>
+          <p>• Wrong answers or timeouts reduce 1 Life (❤️).</p>
+          <p>• Watch out for <strong>Wind Zones</strong>: Updrafts (↑), Downdrafts (↓), and Crosswinds (→).</p>
+          <p>• Collect Power-ups: 🛡️ Shield (deflects birds), 🧲 Coin Magnet, ⚡ Speed Boost, ❤️ Extra Life.</p>
+          <p>• Lose all 3 lives $\rightarrow$ <strong>DRAGON DOWN</strong>.</p>
+        </div>
+
+        <button id="btn-close-howtoplay" class="btn btn-primary" style="margin: 16px auto 0 auto; max-width: 200px;">
+          GOT IT!
+        </button>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         PAUSE SCREEN
+         ========================================== -->
+    <div id="screen-pause" class="overlay-screen hidden">
+      <div class="panel-card" style="max-width: 420px;">
+        <h2 class="game-title" style="font-size: 2.2rem;">GAME PAUSED</h2>
+        <p style="color: #94a3b8; margin-bottom: 20px;">The dragon rests above the clouds</p>
+
+        <div class="menu-btn-group">
+          <button id="btn-resume" class="btn btn-primary">
+            <span>▶️</span> RESUME
+          </button>
+          <button id="btn-restart" class="btn btn-secondary">
+            <span>🔄</span> RESTART
+          </button>
+          <button id="btn-menu-from-pause" class="btn btn-secondary">
+            <span>🏠</span> MAIN MENU
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         GAME OVER SCREEN (Priority 7: "DRAGON DOWN")
+         ========================================== -->
+    <div id="screen-gameover" class="overlay-screen hidden">
+      <div class="panel-card">
+        <h2 class="gameover-title">DRAGON DOWN</h2>
+
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-title">Final Score</span>
+            <span id="go-score" class="stat-value" style="color: var(--gold-primary);">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-title">Coins Collected</span>
+            <span id="go-coins" class="stat-value" style="color: #ffd700;">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-title">Distance Travelled</span>
+            <span id="go-distance" class="stat-value" style="color: #38bdf8;">0 m</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-title">Quizzes Completed</span>
+            <span id="go-quizzes" class="stat-value">0</span>
+          </div>
+          <div class="stat-item" style="grid-column: span 2;">
+            <span class="stat-title">Correct Answers</span>
+            <span id="go-correct" class="stat-value" style="color: #2ecc71;">0</span>
+          </div>
+        </div>
+
+        <div class="menu-btn-group">
+          <button id="btn-play-again" class="btn btn-primary">
+            <span>🐉</span> PLAY AGAIN
+          </button>
+          <button id="btn-menu-from-gameover" class="btn btn-secondary">
+            <span>🏠</span> MAIN MENU
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Master Game Script -->
+  <script src="game.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "dsq",
+  "version": "1.0.0",
+  "description": "A fast-paced, colorful, responsive 2D arcade browser game built with pure HTML5 Canvas, modern Glassmorphism CSS, and the Web Audio API.",
+  "main": "game.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "jpeg-js": "^0.4.4",
+    "pngjs": "^7.0.0"
+  }
+}
